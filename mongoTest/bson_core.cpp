@@ -85,6 +85,14 @@ core & core::append(raw_value & value)
 {
     bson_t bson;
     bson_init_static(&bson, value.data(), value.size());
+    
+    if (!bson_append_document(impl_->get(),
+                              impl_->getKey().c_str(),
+                              static_cast<int>(impl_->getKey().length()),
+                              &bson))
+    {
+    }
+
     return *this;
 }
 
