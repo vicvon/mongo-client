@@ -83,7 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bson_core.h" />
-    <ClInclude Include="bsoncpp.h" />
+    <ClInclude Include="bson_doc.h" />
     <ClInclude Include="bson_test.h" />
     <ClInclude Include="bson_value.h" />
     <ClInclude Include="connect_test.h" />
