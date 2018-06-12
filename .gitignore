@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+.vs
+mongoTest/bin
+mongoTest/obj
