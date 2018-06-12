@@ -21,9 +21,8 @@ public:
 
     core& setKey(std::string & key);
     core& append(std::string & value);
-    core& append(document & doc);
-    core& append();
-    raw_value & extract_document();
+    core& append(raw_value & value);
+    raw_value extract_document();
 private:
     boost::shared_ptr<coreImpl> impl_;
 };

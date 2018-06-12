@@ -2,7 +2,7 @@
 #define _BSON_CPP_H_
 
 #include "bson_core.h"
-
+#include "bson_value.h"
 #include <string>
 
 namespace bsonCpp
@@ -10,8 +10,12 @@ namespace bsonCpp
 class document
 {
 public:
-    document();
-    ~document();
+    document()
+    {
+    }
+    ~document()
+    {
+    }
 
     template <typename T>
     document & append(std::string & k, T & v)
@@ -21,17 +25,22 @@ public:
 
         return *this;
     }
+
+    raw_value extract()
+    {
+        return core_.extract_document();
+    }
 private:
     core core_;
 };
 
 template <typename T>
-document make_document(std::string & k, T & v)
+raw_value make_document(std::string & k, T & v)
 {
     document doc;
     doc.append(k, v);
 
-    return doc;
+    return doc.extract();
 }
 
 }

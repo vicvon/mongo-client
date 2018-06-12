@@ -40,6 +40,15 @@ public:
     {
         return key_;
     }
+
+    raw_value extractor_document()
+    {
+        uint32_t buflen;
+        uint8_t * buff = bson_destroy_with_steal(bson_.get(), true, &buflen);
+        bson_init(bson_.get());
+
+        return raw_value(buff, buflen, bson_free);
+    }
 private:
     std::string key_;
     raii_bson_t bson_;
@@ -72,9 +81,16 @@ core & core::append(std::string & value)
     return *this;
 }
 
-raw_value& core::extract_document()
+core & core::append(raw_value & value)
 {
-    
+    bson_t bson;
+    bson_init_static(&bson, value.data(), value.size());
+    return *this;
+}
+
+raw_value core::extract_document()
+{
+    return impl_->extractor_document();
 }
 
 }
