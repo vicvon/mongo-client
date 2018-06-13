@@ -10,7 +10,7 @@ namespace bsonCpp
 class raw_value
 {
 public:
-    typedef void(* delete_fun)(void *);
+    typedef void(* delete_fun)(uint8_t *);
     raw_value(uint8_t * src, uint32_t length, delete_fun dtor);
     virtual ~raw_value();
     raw_value(const raw_value& rhs);

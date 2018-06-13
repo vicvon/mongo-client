@@ -3,9 +3,14 @@
 #include <bcon.h>
 
 #include "bson_value.h"
-
+#include <iostream>
 namespace bsonCpp
 {
+void bson_free_deleter(uint8_t *p)
+{
+    bson_free(p);
+}
+
 class raii_bson_t : public boost::noncopyable
 {
 public:
@@ -29,6 +34,10 @@ class core::coreImpl
 {
 public:
     coreImpl(bool is_array) : index_(0), isArray_(is_array)
+    {
+    }
+
+    ~coreImpl()
     {
     }
 
@@ -59,7 +68,7 @@ public:
         uint8_t * buff = bson_destroy_with_steal(bson_.get(), true, &buflen);
         bson_init(bson_.get());
 
-        return doc_value(buff, buflen, bson_free);
+        return doc_value(buff, buflen, bson_free_deleter);
     }
 
     arr_value extractor_array()
@@ -68,7 +77,7 @@ public:
         uint8_t * buff = bson_destroy_with_steal(bson_.get(), true, &buflen);
         bson_init(bson_.get());
 
-        return arr_value(buff, buflen, bson_free);
+        return arr_value(buff, buflen, bson_free_deleter);
     }
 private:
     std::string key_;

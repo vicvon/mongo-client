@@ -5,9 +5,9 @@
 namespace bsonCpp
 {
 
-void deleter(void * p)
+void deleter(uint8_t * p)
 {
-    delete[] p;
+    delete [] p;
 }
 
 raw_value::raw_value(uint8_t * src, uint32_t length, delete_fun dtor) : buff_(src),
