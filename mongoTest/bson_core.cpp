@@ -28,33 +28,56 @@ private:
 class core::coreImpl
 {
 public:
+    coreImpl(bool is_array) : index_(0), isArray_(is_array)
+    {
+    }
+
     bson_t * get()
     {
         return bson_.get();
     }
-    void setKey(std::string & key)
+    void setKey(const std::string & key)
     {
         key_ = key;
     }
-    const std::string& getKey() const
+    const std::string getKey()
     {
+        if (isArray_)
+        {
+            char str[16] = {0};
+            const char * key;
+            bson_uint32_to_string(index_++, &key, str, sizeof(str));
+
+            return std::string(key);
+        }
         return key_;
     }
 
-    raw_value extractor_document()
+    doc_value extractor_document()
     {
         uint32_t buflen;
         uint8_t * buff = bson_destroy_with_steal(bson_.get(), true, &buflen);
         bson_init(bson_.get());
 
-        return raw_value(buff, buflen, bson_free);
+        return doc_value(buff, buflen, bson_free);
+    }
+
+    arr_value extractor_array()
+    {
+        uint32_t buflen;
+        uint8_t * buff = bson_destroy_with_steal(bson_.get(), true, &buflen);
+        bson_init(bson_.get());
+
+        return arr_value(buff, buflen, bson_free);
     }
 private:
     std::string key_;
     raii_bson_t bson_;
+    uint32_t index_;
+    bool isArray_;
 };
 
-core::core():impl_(new coreImpl)
+core::core(bool is_array) : impl_(new coreImpl(is_array))
 {
 }
 
@@ -62,7 +85,7 @@ core::~core()
 {
 }
 
-core & core::setKey(std::string & key)
+core & core::setKey(const std::string & key)
 {
     impl_->setKey(key);
 
@@ -71,9 +94,10 @@ core & core::setKey(std::string & key)
 
 core & core::append(std::string & value)
 {
+    std::string key = impl_->getKey();
     if (!bson_append_utf8(impl_->get(),
-                        impl_->getKey().c_str(), 
-                        static_cast<int>(impl_->getKey().length()),
+                        key.c_str(), 
+                        static_cast<int>(key.length()),
                         value.c_str(),
                         static_cast<int>(value.length())))
     {
@@ -81,14 +105,15 @@ core & core::append(std::string & value)
     return *this;
 }
 
-core & core::append(raw_value & value)
+core & core::append(doc_value & value)
 {
     bson_t bson;
     bson_init_static(&bson, value.data(), value.size());
     
+    std::string key = impl_->getKey();
     if (!bson_append_document(impl_->get(),
-                              impl_->getKey().c_str(),
-                              static_cast<int>(impl_->getKey().length()),
+                              key.c_str(),
+                              static_cast<int>(key.length()),
                               &bson))
     {
     }
@@ -96,9 +121,53 @@ core & core::append(raw_value & value)
     return *this;
 }
 
-raw_value core::extract_document()
+core & core::append(arr_value & value)
+{
+    bson_t bson;
+    bson_init_static(&bson, value.data(), value.size());
+
+    std::string key = impl_->getKey();
+    if (!bson_append_array(impl_->get(),
+                           key.c_str(),
+                           static_cast<int>(key.length()),
+                           &bson))
+    {
+    }
+
+    return *this;
+}
+
+core & core::append(int32_t value)
+{
+    std::string key = impl_->getKey();
+    if (!bson_append_int32(impl_->get(),
+                           key.c_str(),
+                           static_cast<int>(key.length()),
+                           value))
+    {
+    }
+    return *this;
+}
+
+core & core::append()
+{
+    std::string key = impl_->getKey();
+    if (!bson_append_null(impl_->get(), 
+                          key.c_str(), 
+                          static_cast<int>(key.length())))
+    {
+    }
+    return *this;
+}
+
+doc_value core::extract_document()
 {
     return impl_->extractor_document();
+}
+
+arr_value core::extractor_array()
+{
+    return impl_->extractor_array();
 }
 
 }

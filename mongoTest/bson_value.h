@@ -12,7 +12,7 @@ class raw_value
 public:
     typedef void(* delete_fun)(void *);
     raw_value(uint8_t * src, uint32_t length, delete_fun dtor);
-    ~raw_value();
+    virtual ~raw_value();
     raw_value(const raw_value& rhs);
 
     const uint8_t * data() const;
@@ -25,6 +25,27 @@ private:
     delete_fun delete_fun_;
 };
 
+class doc_value : public raw_value
+{
+public:
+    doc_value(uint8_t * src, uint32_t length, delete_fun dtor) : raw_value(src, length, dtor)
+    {
+    }
+    virtual ~doc_value()
+    {
+    }
+};
+
+class arr_value : public raw_value
+{
+public:
+    arr_value(uint8_t * src, uint32_t length, delete_fun dtor) : raw_value(src, length, dtor)
+    {
+    }
+    virtual ~arr_value()
+    {
+    }
+};
 
 }
 

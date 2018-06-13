@@ -9,20 +9,25 @@
 namespace bsonCpp
 {
 
-class raw_value;
+class doc_value;
+class arr_value;
 class document;
 
 class core : public boost::noncopyable
 {
 public:
     class coreImpl;
-    core();
+    core(bool is_array);
     ~core();
 
-    core& setKey(std::string & key);
+    core& setKey(const std::string & key);
     core& append(std::string & value);
-    core& append(raw_value & value);
-    raw_value extract_document();
+    core& append(doc_value & value);
+    core& append(arr_value & value);
+    core& append(int32_t value);
+    core& append();
+    doc_value extract_document();
+    arr_value extractor_array();
 private:
     boost::shared_ptr<coreImpl> impl_;
 };

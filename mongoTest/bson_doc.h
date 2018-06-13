@@ -10,7 +10,7 @@ namespace bsonCpp
 class document
 {
 public:
-    document()
+    document() : core_(false)
     {
     }
     ~document()
@@ -18,7 +18,7 @@ public:
     }
 
     template <typename T>
-    document & append(std::string & k, T & v)
+    document & append(const std::string & k, T & v)
     {
         core_.setKey(k);
         core_.append(v);
@@ -26,7 +26,15 @@ public:
         return *this;
     }
 
-    raw_value extract()
+    document & append(const std::string & k)
+    {
+        core_.setKey(k);
+        core_.append();
+
+        return *this;
+    }
+
+    doc_value extract()
     {
         return core_.extract_document();
     }
@@ -35,10 +43,18 @@ private:
 };
 
 template <typename T>
-raw_value make_document(std::string & k, T & v)
+doc_value make_document(const std::string & k, T v)
 {
     document doc;
     doc.append(k, v);
+
+    return doc.extract();
+}
+
+doc_value make_document(const std::string & k)
+{
+    document doc;
+    doc.append(k);
 
     return doc.extract();
 }
