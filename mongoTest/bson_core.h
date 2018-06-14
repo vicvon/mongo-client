@@ -16,7 +16,6 @@ class document;
 class core : public boost::noncopyable
 {
 public:
-    class coreImpl;
     core(bool is_array);
     ~core();
 
@@ -29,6 +28,7 @@ public:
     doc_value extract_document();
     arr_value extractor_array();
 private:
+    class coreImpl;
     boost::shared_ptr<coreImpl> impl_;
 };
 
