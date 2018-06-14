@@ -15,5 +15,7 @@ int main()
     mongoCpp::mongo_client_pool pool(server);
     mongoCpp::mongo_client_pool::pool_client_entry cli = pool.get_client();
 
+    mongoCpp::collection coll = cli.get().get_database("db_name").get_collection("coll_name");
+
     return 0;
 }
