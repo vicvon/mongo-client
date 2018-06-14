@@ -4,6 +4,7 @@
 #include "mongo_uri.h"
 #include "mongo_pool.h"
 #include "mongo_client.h"
+#include "mongo_database.h"
 #include <mongoc.h>
 
 namespace mongoCpp
@@ -56,6 +57,20 @@ struct client::Impl
     mongoc_client_t * client_;
 private:
     bool isPool_;
+};
+
+struct database::Impl
+{
+    Impl(mongoc_client_t * cli, std::string name)
+    {
+        database_ = mongoc_client_get_database(cli, name.c_str());
+    }
+    ~Impl()
+    {
+        mongoc_database_destroy(database_);
+    }
+
+    mongoc_database_t * database_;
 };
 
 }

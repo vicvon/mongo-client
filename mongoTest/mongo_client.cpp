@@ -14,4 +14,9 @@ client::~client()
 {
 }
 
+database client::get_database(std::string name)
+{
+    return database(impl_->client_, name);
+}
+
 }
