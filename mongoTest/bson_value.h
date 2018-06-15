@@ -7,10 +7,14 @@
 namespace bsonCpp
 {
 
+void deleter(uint8_t * p);
+void bson_free_deleter(uint8_t *p);
+
 class raw_value
 {
 public:
     typedef void(* delete_fun)(uint8_t *);
+    raw_value();
     raw_value(uint8_t * src, uint32_t length, delete_fun dtor);
     virtual ~raw_value();
     raw_value(const raw_value& rhs);

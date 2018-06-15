@@ -6,10 +6,6 @@
 #include <iostream>
 namespace bsonCpp
 {
-void bson_free_deleter(uint8_t *p)
-{
-    bson_free(p);
-}
 
 class raii_bson_t : public boost::noncopyable
 {
@@ -101,7 +97,7 @@ core & core::setKey(const std::string & key)
     return *this;
 }
 
-core & core::append(std::string & value)
+core & core::append(const std::string & value)
 {
     std::string key = impl_->getKey();
     if (!bson_append_utf8(impl_->get(),
@@ -114,7 +110,13 @@ core & core::append(std::string & value)
     return *this;
 }
 
-core & core::append(doc_value & value)
+core & core::append(const char * value)
+{
+    std::string v = value;
+    return append(v);
+}
+
+core & core::append(const doc_value & value)
 {
     bson_t bson;
     bson_init_static(&bson, value.data(), value.size());
@@ -130,7 +132,7 @@ core & core::append(doc_value & value)
     return *this;
 }
 
-core & core::append(arr_value & value)
+core & core::append(const arr_value & value)
 {
     bson_t bson;
     bson_init_static(&bson, value.data(), value.size());
@@ -146,13 +148,25 @@ core & core::append(arr_value & value)
     return *this;
 }
 
-core & core::append(int32_t value)
+core & core::append(const int32_t value)
 {
     std::string key = impl_->getKey();
     if (!bson_append_int32(impl_->get(),
                            key.c_str(),
                            static_cast<int>(key.length()),
                            value))
+    {
+    }
+    return *this;
+}
+
+core & core::append(const bool value)
+{
+    std::string key = impl_->getKey();
+    if (!bson_append_bool(impl_->get(),
+                          key.c_str(),
+                          static_cast<int>(key.length()),
+                          value))
     {
     }
     return *this;

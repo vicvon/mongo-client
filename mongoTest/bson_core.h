@@ -20,10 +20,12 @@ public:
     ~core();
 
     core& setKey(const std::string & key);
-    core& append(std::string & value);
-    core& append(doc_value & value);
-    core& append(arr_value & value);
-    core& append(int32_t value);
+    core& append(const std::string & value);
+    core& append(const char * value);
+    core& append(const doc_value & value);
+    core& append(const arr_value & value);
+    core& append(const int32_t value);
+    core& append(const bool value);
     core& append();
     doc_value extract_document();
     arr_value extractor_array();
