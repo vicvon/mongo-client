@@ -44,8 +44,8 @@ raw_value::raw_value(const raw_value & rhs)
     {
         if (rhs.isOwner_)
         {
-            buff_ = new uint8_t[rhs.size()];
-            buflen_ = rhs.size();
+            buff_ = new uint8_t[rhs.buflen_];
+            buflen_ = rhs.buflen_;
             delete_fun_ = deleter;
             std::copy(rhs.buff_, rhs.buff_ + rhs.buflen_, buff_);
         }
