@@ -58,25 +58,18 @@ bool collection::createIndex(bsonCpp::doc_value & keys, bsonCpp::doc_value & opt
     bson_free(index_name);
 
     bsonCpp::arr_value indexes_opts = bsonCpp::make_array(bsonCpp::make_document(bsonCpp::kvp("key", keys),
-                                                                                 bsonCpp::kvp("name", name)),
-                                                          options);
+                                                                                 bsonCpp::kvp("name", name),
+                                                                                 options));
 
-    bsonCpp::doc_value cmd = bsonCpp::make_document(bsonCpp::kvp("createIndexes", mongoc_collection_get_name(impl_->collection_)), 
+    bsonCpp::doc_value cmd = bsonCpp::make_document(bsonCpp::kvp("createIndexes", mongoc_collection_get_name(impl_->collection_)),
                                                     bsonCpp::kvp("indexes", indexes_opts));
 
     bson_t bson_cmd, reply;
     bson_error_t err;
     bson_init_static(&bson_cmd, cmd.data(), cmd.size());
 
-    char * str = bson_as_json(&bson_cmd, NULL);
-    std::cout << str << std::endl;
-    bson_free(str);
-
     bool ret = mongoc_collection_write_command_with_opts(impl_->collection_, &bson_cmd, NULL, &reply, &err);
 
-    char * reply_str = bson_as_json(&reply, NULL);
-    std::cout << reply_str << std::endl;
-    bson_free(reply_str);
     bson_destroy(&reply);
 
     return ret;

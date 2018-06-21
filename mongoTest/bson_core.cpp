@@ -120,7 +120,7 @@ core & core::append(const doc_value & value)
 {
     bson_t bson;
     bson_init_static(&bson, value.data(), value.size());
-    
+
     std::string key = impl_->getKey();
     if (!bson_append_document(impl_->get(),
                               key.c_str(),
@@ -154,6 +154,18 @@ core & core::append(const int32_t value)
     if (!bson_append_int32(impl_->get(),
                            key.c_str(),
                            static_cast<int>(key.length()),
+        value))
+    {
+    }
+    return *this;
+}
+
+core & core::append(const int64_t value)
+{
+    std::string key = impl_->getKey();
+    if (!bson_append_int64(impl_->get(),
+                           key.c_str(),
+                           static_cast<int>(key.length()),
                            value))
     {
     }
@@ -180,6 +192,15 @@ core & core::append()
                           static_cast<int>(key.length())))
     {
     }
+    return *this;
+}
+
+core & core::concat(const doc_value & value)
+{
+    bson_t other;
+    bson_init_static(&other, value.data(), value.size());
+
+    bson_concat(impl_->get(), &other);
     return *this;
 }
 

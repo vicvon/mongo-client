@@ -25,8 +25,10 @@ public:
     core& append(const doc_value & value);
     core& append(const arr_value & value);
     core& append(const int32_t value);
+    core& append(const int64_t value);
     core& append(const bool value);
     core& append();
+    core& concat(const doc_value & value);
     doc_value extract_document();
     arr_value extractor_array();
 private:

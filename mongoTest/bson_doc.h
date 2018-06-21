@@ -19,6 +19,20 @@ public:
     }
 
     template <typename T>
+    document & append(const boost::tuple<const std::string &, T> & arg)
+    {
+        return append(boost::get<0>(arg), boost::get<1>(arg));
+    }
+
+    document & append(doc_value & v);
+    document & append(const std::string & k);
+
+    doc_value extract()
+    {
+        return core_.extract_document();
+    }
+private:
+    template <typename T>
     document & append(const std::string & k, T & v)
     {
         core_.setKey(k);
@@ -27,12 +41,6 @@ public:
         return *this;
     }
 
-    document & append(const std::string & k);
-
-    doc_value extract()
-    {
-        return core_.extract_document();
-    }
 private:
     core core_;
 };
@@ -44,32 +52,55 @@ boost::tuple<const std::string &, T> kvp(const std::string & k, T v)
 }
 
 template <typename T0>
-doc_value make_document(const boost::tuple<const std::string &, T0> & arg)
+doc_value make_document(T0 v0)
 {
     document doc;
-    doc.append(boost::get<0>(arg), boost::get<1>(arg));
+    doc.append(v0);
 
     return doc.extract();
 }
 
 template <typename T0, typename T1>
-doc_value make_document(const boost::tuple<const std::string &, T0> & arg1,
-                        const boost::tuple<const std::string &, T1> & arg2)
+doc_value make_document(T0 v0, T1 v1)
 {
     document doc;
-    doc.append(boost::get<0>(arg1), boost::get<1>(arg1)).append(boost::get<0>(arg2), boost::get<1>(arg2));
+    doc.append(v0).append(v1);
 
     return doc.extract();
 }
 
 template <typename T0, typename T1, typename T2>
-doc_value make_document(const boost::tuple<const std::string &, T0> & arg1,
-                        const boost::tuple<const std::string &, T1> & arg2,
-                        const boost::tuple<const std::string &, T2> & arg3)
+doc_value make_document(T0 v0, T1 v1, T2 v2)
 {
     document doc;
-    doc.append(boost::get<0>(arg1), boost::get<1>(arg1)).append(boost::get<0>(arg2), boost::get<1>(arg2)).
-        append(boost::get<0>(arg3), boost::get<1>(arg3));
+    doc.append(v0).append(v1).append(v2);
+
+    return doc.extract();
+}
+
+template <typename T0, typename T1, typename T2, typename T3>
+doc_value make_document(T0 v0, T1 v1, T2 v2, T3 v3)
+{
+    document doc;
+    doc.append(v0).append(v1).append(v2).append(v3);
+
+    return doc.extract();
+}
+
+template <typename T0, typename T1, typename T2, typename T3, typename T4>
+doc_value make_document(T0 v0, T1 v1, T2 v2, T3 v3, T4 v4)
+{
+    document doc;
+    doc.append(v0).append(v1).append(v2).append(v3).append(v4);
+
+    return doc.extract();
+}
+
+template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5>
+doc_value make_document(T0 v0, T1 v1, T2 v2, T3 v3, T4 v4, T5 v5)
+{
+    document doc;
+    doc.append(v0).append(v1).append(v2).append(v3).append(v4).append(v5);
 
     return doc.extract();
 }

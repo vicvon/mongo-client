@@ -10,6 +10,13 @@ doc_value make_document(const std::string & k)
 
     return doc.extract();
 }
+
+document & document::append(doc_value & v)
+{
+    core_.concat(v);
+    return *this;
+}
+
 document & document::append(const std::string & k)
 {
     core_.setKey(k);

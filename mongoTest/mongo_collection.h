@@ -17,8 +17,8 @@ public:
 
     cursor aggregate(bsonCpp::doc_value & pipeline, bsonCpp::doc_value & options);
     bool createIndex(bsonCpp::doc_value & keys, bsonCpp::doc_value & options);
-    boost::optional<bsonCpp::doc_value> update_one(bsonCpp::doc_value & selector, 
-                                                   bsonCpp::doc_value & updater, 
+    boost::optional<bsonCpp::doc_value> update_one(bsonCpp::doc_value & selector,
+                                                   bsonCpp::doc_value & updater,
                                                    bsonCpp::doc_value & options);
 private:
     struct Impl;

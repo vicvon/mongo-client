@@ -19,9 +19,9 @@ raw_value::raw_value():buff_(NULL), buflen_(0), delete_fun_(NULL)
 {
 }
 
-raw_value::raw_value(uint8_t * src, uint32_t length, delete_fun dtor) : buff_(src),
-                                                                        buflen_(length),
-                                                                        delete_fun_(dtor)
+raw_value::raw_value(uint8_t * src, uint32_t length,
+                     boost::function<void(uint8_t *)> dtor) : buff_(src),
+                                                              buflen_(length), delete_fun_(dtor)
 {
 }
 
@@ -56,6 +56,32 @@ const uint8_t * raw_value::data() const
 const uint32_t raw_value::size() const
 {
     return buflen_;
+}
+
+raw_value & raw_value::operator=(const raw_value & rhs)
+{
+    if (this == &rhs)
+    {
+        return *this;
+    }
+    if (buff_ && delete_fun_)
+    {
+        delete_fun_(buff_);
+    }
+
+    if (rhs.buflen_ > 0)
+    {
+        buff_ = new uint8_t[rhs.buflen_];
+        std::copy(rhs.data(), rhs.data() + rhs.size(), buff_);
+        buflen_ = rhs.buflen_;
+        delete_fun_ = deleter;
+        return *this;
+    }
+
+    buff_ = NULL;
+    buflen_ = 0;
+    delete_fun_ = NULL;
+    return *this;
 }
 
 }
