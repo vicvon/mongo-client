@@ -14,7 +14,7 @@ class raw_value
 {
 public:
     raw_value();
-    raw_value(uint8_t * src, uint32_t length, boost::function<void(uint8_t *)> dtor);
+    raw_value(uint8_t * src, uint32_t length, boost::function<void(uint8_t *)> dtor = NULL);
     virtual ~raw_value();
     raw_value(const raw_value& rhs);
 
@@ -26,6 +26,7 @@ private:
     uint8_t * buff_;
     uint32_t buflen_;
     boost::function<void(uint8_t *)> delete_fun_;
+    bool isOwner_;     /* 是否拥有buff_所指向地址的所有权,即是否需要自动释放 */
 };
 
 class doc_value : public raw_value
