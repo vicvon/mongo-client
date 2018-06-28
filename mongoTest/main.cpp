@@ -8,7 +8,7 @@
 
 int main()
 {
-#if 0
+#if 1
     std::string uri("mongodb://192.168.153.100:27017");
     mongoCpp::mongo_init init;
 
@@ -46,25 +46,20 @@ int main()
     bson_concat(&b, &b1);
     bson_concat(&b, &b2);
     
-
-    bson_iter_t iter;
-    bson_iter_init(&iter, &b);
-    while (bson_iter_next(&iter))
+    bsonCpp::view v(bson_get_data(&b), b.len);
+    try
     {
-        const auto ikey = bson_iter_key(&iter);
-        std::cout << "key: " << ikey << std::endl;
-        if (BSON_TYPE_INT32 == bson_iter_type(&iter))
-        {
-            auto ivalue = bson_iter_int32(&iter);
-            std::cout << "value: " << ivalue << std::endl;
-        }
-        else if (BSON_TYPE_UTF8 == bson_iter_type(&iter))
-        {
-            uint32_t len;
-            const auto ivalue = bson_iter_utf8(&iter, &len);
-            std::cout << "value: " << ivalue << std::endl;
-        }
+        int32_t val = v.get_value_as_int32("name");
+        std::cout << val << std::endl;
+        int32_t val1 = v.get_value_as_int32("name1");
+        std::cout << val1 << std::endl;
     }
+    catch (std::exception & e)
+    {
+        std::cout << e.what() << std::endl;
+    }
+    
+    std::cout << "over" << std::endl;
 #endif
     return 0;
 }

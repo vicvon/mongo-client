@@ -4,6 +4,8 @@
 
 #include "bson_value.h"
 #include <iostream>
+#include <stdexcept>
+
 namespace bsonCpp
 {
 
@@ -106,6 +108,7 @@ core & core::append(const std::string & value)
                         value.c_str(),
                         static_cast<int>(value.length())))
     {
+        throw std::runtime_error("append string error");
     }
     return *this;
 }
@@ -127,6 +130,7 @@ core & core::append(const doc_value & value)
                               static_cast<int>(key.length()),
                               &bson))
     {
+        throw std::runtime_error("append document error");
     }
 
     return *this;
@@ -143,6 +147,7 @@ core & core::append(const arr_value & value)
                            static_cast<int>(key.length()),
                            &bson))
     {
+        throw std::runtime_error("append array error");
     }
 
     return *this;
@@ -154,8 +159,9 @@ core & core::append(const int32_t value)
     if (!bson_append_int32(impl_->get(),
                            key.c_str(),
                            static_cast<int>(key.length()),
-        value))
+                           value))
     {
+        throw std::runtime_error("append integer32 error");
     }
     return *this;
 }
@@ -168,6 +174,7 @@ core & core::append(const int64_t value)
                            static_cast<int>(key.length()),
                            value))
     {
+        throw std::runtime_error("append integer64 error");
     }
     return *this;
 }
@@ -180,6 +187,7 @@ core & core::append(const bool value)
                           static_cast<int>(key.length()),
                           value))
     {
+        throw std::runtime_error("append bool error");
     }
     return *this;
 }
@@ -191,6 +199,7 @@ core & core::append()
                           key.c_str(), 
                           static_cast<int>(key.length())))
     {
+        throw std::runtime_error("append null error");
     }
     return *this;
 }

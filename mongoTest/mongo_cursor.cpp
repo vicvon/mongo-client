@@ -1,5 +1,7 @@
 #include "mongo_cursor.h"
 #include <mongoc.h>
+#include <stdexcept>
+#include <boost/format.hpp>
 
 namespace mongoCpp
 {
@@ -30,9 +32,16 @@ bool cursor::next()
     }
     else if (mongoc_cursor_error(impl_->curs_, &err))
     {
+        boost::format fmt = boost::format("mongoc cursor next error, error message: %s") % err.message;
+        throw std::runtime_error(fmt.str());
     }
 
     return false;
+}
+
+bsonCpp::view cursor::getResult()
+{
+    return bsonCpp::view(bson_get_data(impl_->out), impl_->out->len);
 }
 
 }

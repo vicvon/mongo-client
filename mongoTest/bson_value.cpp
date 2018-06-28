@@ -32,7 +32,7 @@ raw_value::raw_value(uint8_t * src, uint32_t length,
 
 raw_value::~raw_value()
 {
-    if (delete_fun_ != NULL)
+    if (delete_fun_ != NULL && isOwner_)
     {
         delete_fun_(buff_);
     }
@@ -48,6 +48,7 @@ raw_value::raw_value(const raw_value & rhs)
             buflen_ = rhs.buflen_;
             delete_fun_ = deleter;
             std::copy(rhs.buff_, rhs.buff_ + rhs.buflen_, buff_);
+            isOwner_ = true;
         }
         else
         {
@@ -95,6 +96,7 @@ raw_value & raw_value::operator=(const raw_value & rhs)
             std::copy(rhs.buff_, rhs.buff_ + rhs.buflen_, buff_);
             buflen_ = rhs.buflen_;
             delete_fun_ = deleter;
+            isOwner_ = true;
         }
         else
         {

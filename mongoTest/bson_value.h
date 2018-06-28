@@ -32,7 +32,7 @@ private:
 class doc_value : public raw_value
 {
 public:
-    doc_value(uint8_t * src, uint32_t length, boost::function<void(uint8_t *)> dtor) : raw_value(src, length, dtor)
+    doc_value(uint8_t * src, uint32_t length, boost::function<void(uint8_t *)> dtor = NULL) : raw_value(src, length, dtor)
     {
     }
     virtual ~doc_value()
@@ -43,7 +43,7 @@ public:
 class arr_value : public raw_value
 {
 public:
-    arr_value(uint8_t * src, uint32_t length, boost::function<void(uint8_t *)> dtor) : raw_value(src, length, dtor)
+    arr_value(uint8_t * src, uint32_t length, boost::function<void(uint8_t *)> dtor = NULL) : raw_value(src, length, dtor)
     {
     }
     virtual ~arr_value()
