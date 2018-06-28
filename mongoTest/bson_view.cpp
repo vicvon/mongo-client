@@ -34,6 +34,14 @@ const uint32_t view::size() const
     return length_;
 }
 
+uint32_t view::count_keys()
+{
+    bson_t b;
+    bson_init_static(&b, data_, length_);
+
+    return bson_count_keys(&b);
+}
+
 bool view::find_key(const std::string & key)
 {
     bson_t b;

@@ -15,6 +15,7 @@ public:
     const uint8_t * data() const;
     const uint32_t size() const;
 
+    uint32_t count_keys();
     bool find_key(const std::string & key);
     std::string get_value_as_utf8(const std::string & key);
     int32_t get_value_as_int32(const std::string & key);

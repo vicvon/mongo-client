@@ -29,6 +29,26 @@ collection::~collection()
 {
 }
 
+cursor collection::find(bsonCpp::doc_value & selector, bsonCpp::doc_value & options)
+{
+    bson_t filters;
+    bson_init_static(&filters, selector.data(), selector.size());
+
+    mongoc_cursor_t * curs;
+    if (options.data() == NULL)
+    {
+        curs = mongoc_collection_find_with_opts(impl_->collection_, &filters, NULL, NULL);
+    }
+    else
+    {
+        bson_t opts;
+        bson_init_static(&opts, options.data(), options.size());
+        curs = mongoc_collection_find_with_opts(impl_->collection_, &filters, &opts, NULL);
+    }
+
+    return cursor(static_cast<void *>(curs));
+}
+
 cursor collection::aggregate(bsonCpp::doc_value & pipeline, bsonCpp::doc_value & options)
 {
     bson_t pipe;
