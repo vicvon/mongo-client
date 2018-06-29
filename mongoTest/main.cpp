@@ -4,10 +4,36 @@
 #include "mongo_pool.h"
 #include <iostream>
 #include <sstream>
-#include <bson.h>
+#include <boost/random.hpp>
+
+std::string random_str(boost::uniform_int<> & ui, boost::mt19937 & seed, int length)
+{
+    std::string result = "";
+    for (int i = 0; i < length; ++i)
+    {
+        int randNum = ui(seed);
+        int index = randNum % 2;
+
+        char ch;
+        switch (index)
+        {
+            case 0:
+                ch = 'A' + randNum % 26;
+                break;
+            case 1:
+                ch = 'a' + randNum % 26;
+                break;
+        }
+        result += ch;
+    }
+    return result;
+}
 
 void process(mongoCpp::mongo_client_pool & pool)
 {
+    boost::mt19937 rng(time(NULL));
+    boost::uniform_int<> ui(1, 10);
+
     bsonCpp::doc_value match = bsonCpp::make_document(
         bsonCpp::kvp("$match", bsonCpp::make_document(bsonCpp::kvp("uid", "test"))));
     bsonCpp::doc_value unwind = bsonCpp::make_document(bsonCpp::kvp("$unwind", "$res"));
@@ -33,8 +59,8 @@ void process(mongoCpp::mongo_client_pool & pool)
         std::vector<std::string> resource;
         for (int i = 0; i < 10; ++i)
         {
-            std::stringstream str;
-
+            int len = ui(rng);
+            resource.push_back(random_str(ui, rng, len));
         }
 
         bsonCpp::arr_value arr = bsonCpp::make_array(resource);
