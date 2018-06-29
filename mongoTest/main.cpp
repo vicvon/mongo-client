@@ -2,9 +2,70 @@
 #include "bson_array.h"
 #include "mongocpp.h"
 #include "mongo_pool.h"
-#include <bcon.h>
 #include <iostream>
 #include <sstream>
+#include <bson.h>
+
+void process(mongoCpp::mongo_client_pool & pool)
+{
+    bsonCpp::doc_value match = bsonCpp::make_document(
+        bsonCpp::kvp("$match", bsonCpp::make_document(bsonCpp::kvp("uid", "test"))));
+    bsonCpp::doc_value unwind = bsonCpp::make_document(bsonCpp::kvp("$unwind", "$res"));
+    bsonCpp::doc_value project = bsonCpp::make_document(
+        bsonCpp::kvp("$project", bsonCpp::make_document(
+            bsonCpp::kvp("length", bsonCpp::make_document(bsonCpp::kvp("$strLenCP", "$res"))), 
+            bsonCpp::kvp("uid", 1), bsonCpp::kvp("version", 1))));
+    bsonCpp::doc_value group = bsonCpp::make_document(
+        bsonCpp::kvp("$group", bsonCpp::make_document(
+            bsonCpp::kvp("_id", bsonCpp::make_document(
+                bsonCpp::kvp("uid", "$uid"), bsonCpp::kvp("version", "$version"))),
+            bsonCpp::kvp("totalsize", bsonCpp::make_document(bsonCpp::kvp("$sum", "$length"))),
+            bsonCpp::kvp("arraysize", bsonCpp::make_document(bsonCpp::kvp("$sum", 1))))));
+    
+    bsonCpp::doc_value pipeline = bsonCpp::make_document(bsonCpp::kvp("pipeline",
+        bsonCpp::make_array(match, unwind, project, group)));
+    bsonCpp::doc_value opts;
+
+    {
+        mongoCpp::mongo_client_pool::pool_client_entry cli = pool.get_client();
+        mongoCpp::collection coll = cli.get().get_database("db_name").get_collection("coll_name");
+
+        std::vector<std::string> resource;
+        for (int i = 0; i < 10; ++i)
+        {
+            std::stringstream str;
+
+        }
+
+        bsonCpp::arr_value arr = bsonCpp::make_array(resource);
+        bsonCpp::doc_value insert = bsonCpp::make_document(bsonCpp::kvp("$addToSet",
+            bsonCpp::make_document(bsonCpp::kvp("res",
+                bsonCpp::make_document(bsonCpp::kvp("$each", arr))))));
+
+        mongoCpp::cursor curs = coll.aggregate(pipeline, opts);
+        try
+        {
+            int32_t version = 0;
+            if (curs.next())
+            {
+                bsonCpp::view result = curs.getResult();
+                version = result.get_value_as_doc("_id").get_value_as_int32("version");
+
+                bsonCpp::doc_value filter = bsonCpp::make_document(
+                    bsonCpp::kvp("uid", "test"), bsonCpp::kvp("version", version));
+                bsonCpp::doc_value update = bsonCpp::make_document(insert,
+                    bsonCpp::kvp("$set", bsonCpp::make_document(bsonCpp::kvp("version", ++version))));
+            }
+            else
+            {
+            }
+        }
+        catch (std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
+    }
+}
 
 int main()
 {
@@ -29,42 +90,18 @@ int main()
         bsonCpp::doc_value filter = bsonCpp::make_document(bsonCpp::kvp("uid", "npc"));
         bsonCpp::doc_value updater = bsonCpp::make_document(bsonCpp::kvp("$addToSet",
             bsonCpp::make_document(bsonCpp::kvp("res",
-                bsonCpp::make_document(bsonCpp::kvp("$each", bsonCpp::make_array("eee", "fff")))))));
+                bsonCpp::make_document(bsonCpp::kvp("$each", bsonCpp::make_array("eee", "fff")))))),
+            bsonCpp::kvp("$set", bsonCpp::make_document(bsonCpp::kvp("version", 1))));
         bsonCpp::doc_value opts = bsonCpp::make_document(bsonCpp::kvp("upsert", true));
 
         boost::optional<bsonCpp::doc_value> result = coll.update_one(filter, updater, opts);
     }
 
     {
-        bsonCpp::arr_value par = bsonCpp::make_array(
-            bsonCpp::make_document(bsonCpp::kvp("$match", bsonCpp::make_document(bsonCpp::kvp("uid", "npc")))),
-            bsonCpp::make_document(bsonCpp::kvp("$unwind", "$res")),
-            bsonCpp::make_document(bsonCpp::kvp("$project", bsonCpp::make_document(bsonCpp::kvp("length", 
-                bsonCpp::make_document(bsonCpp::kvp("$strLenCP", "$res"))),
-                bsonCpp::make_document(bsonCpp::kvp("uid", 1))))),
-            bsonCpp::make_document(bsonCpp::kvp("$group", bsonCpp::make_document(bsonCpp::kvp("_id", "$uid"),
-                bsonCpp::kvp("totalsize", bsonCpp::make_document(bsonCpp::kvp("$sum", "$length"))),
-                bsonCpp::kvp("arraysize", bsonCpp::make_document(bsonCpp::kvp("$sum", 1)))))));
-        bsonCpp::doc_value pipeline = bsonCpp::make_document(bsonCpp::kvp("pipeline", par));
-        bsonCpp::doc_value opts;
-
-        mongoCpp::cursor curs = coll.aggregate(pipeline, opts);
-        try
-        {
-            while (curs.next())
-            {
-                bsonCpp::view doc = curs.getResult();
-                int32_t totalsize = doc.get_value_as_int32("totalsize");
-                std::cout << "totalsize: " << totalsize << std::endl;
-                std::cout << "id: " << doc.get_value_as_utf8("_id") << std::endl;
-            }
-        }
-        catch (std::exception & e)
-        {
-            std::cout << e.what() << std::endl;
-        }
+        process(pool);
     }
 
+#if 0
     {
         bsonCpp::doc_value filters = bsonCpp::make_document(bsonCpp::kvp("uid", "npc"));
         bsonCpp::doc_value opts;
@@ -89,5 +126,6 @@ int main()
             std::cout << e.what() << std::endl;
         }
     }
+#endif
     return 0;
 }

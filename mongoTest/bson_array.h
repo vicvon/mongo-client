@@ -4,7 +4,7 @@
 #include "bson_core.h"
 #include "bson_value.h"
 
-#include <boost/tuple/tuple.hpp>
+#include <vector>
 
 namespace bsonCpp
 {
@@ -126,6 +126,18 @@ arr_value make_array(T0 v0, T1 v1, T2 v2, T3 v3, T4 v4, T5 v5, T6 v6, T7 v7, T8 
     array arr;
     arr.append(v0).append(v1).append(v2).append(v3).append(v4)
        .append(v5).append(v6).append(v7).append(v8).append(v9);
+
+    return arr.extract();
+}
+
+template <typename T>
+arr_value make_array(std::vector<T> & ele)
+{
+    array arr;
+    for (size_t i = 0; i < ele.size(); ++i)
+    {
+        arr.append(ele[i]);
+    }
 
     return arr.extract();
 }
