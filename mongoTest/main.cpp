@@ -5,6 +5,9 @@
 #include <iostream>
 #include <sstream>
 #include <boost/random.hpp>
+#include <boost/thread.hpp>
+#include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
 
 std::string random_str(boost::uniform_int<> & ui, boost::mt19937 & seed, int length)
 {
@@ -50,9 +53,22 @@ void process(mongoCpp::mongo_client_pool & pool)
     
     bsonCpp::doc_value pipeline = bsonCpp::make_document(bsonCpp::kvp("pipeline",
         bsonCpp::make_array(match, unwind, project, group)));
-    bsonCpp::doc_value opts;
 
+    bsonCpp::doc_value insert_opts = bsonCpp::make_document(bsonCpp::kvp("upsert", true));
+    bsonCpp::doc_value pipeline_opts;
+
+    int loops = 0;
+    while(1)
     {
+        if (loops < 1000)
+        {
+            ++loops;
+        }
+        else
+        {
+            break;
+        }
+
         mongoCpp::mongo_client_pool::pool_client_entry cli = pool.get_client();
         mongoCpp::collection coll = cli.get().get_database("db_name").get_collection("coll_name");
 
@@ -68,7 +84,7 @@ void process(mongoCpp::mongo_client_pool & pool)
             bsonCpp::make_document(bsonCpp::kvp("res",
                 bsonCpp::make_document(bsonCpp::kvp("$each", arr))))));
 
-        mongoCpp::cursor curs = coll.aggregate(pipeline, opts);
+        mongoCpp::cursor curs = coll.aggregate(pipeline, pipeline_opts);
         try
         {
             int32_t version = 0;
@@ -76,14 +92,26 @@ void process(mongoCpp::mongo_client_pool & pool)
             {
                 bsonCpp::view result = curs.getResult();
                 version = result.get_value_as_doc("_id").get_value_as_int32("version");
+                int32_t totalsize = result.get_value_as_int32("totalsize");
+                int32_t arraysize = result.get_value_as_int32("arraysize");
 
-                bsonCpp::doc_value filter = bsonCpp::make_document(
-                    bsonCpp::kvp("uid", "test"), bsonCpp::kvp("version", version));
-                bsonCpp::doc_value update = bsonCpp::make_document(insert,
-                    bsonCpp::kvp("$set", bsonCpp::make_document(bsonCpp::kvp("version", ++version))));
+                if (totalsize < 50000 && arraysize < 1000)
+                {
+                    bsonCpp::doc_value filter = bsonCpp::make_document(
+                        bsonCpp::kvp("uid", "test"), bsonCpp::kvp("version", version));
+                    bsonCpp::doc_value update = bsonCpp::make_document(insert,
+                        bsonCpp::kvp("$set", bsonCpp::make_document(bsonCpp::kvp("version", ++version))));
+
+                    coll.update_one(filter, update, insert_opts);
+                }
             }
             else
             {
+                bsonCpp::doc_value filter = bsonCpp::make_document(bsonCpp::kvp("uid", "test"));
+                bsonCpp::doc_value update = bsonCpp::make_document(insert,
+                    bsonCpp::kvp("$set", bsonCpp::make_document(bsonCpp::kvp("version", 1))));
+
+                coll.update_one(filter, update, insert_opts);
             }
         }
         catch (std::exception& e)
@@ -95,7 +123,7 @@ void process(mongoCpp::mongo_client_pool & pool)
 
 int main()
 {
-    std::string uri("mongodb://192.168.153.100:27017");
+    std::string uri("mongodb://192.168.122.130:27017");
     mongoCpp::mongo_init init;
 
     mongoCpp::uri server(uri);
@@ -124,34 +152,19 @@ int main()
     }
 
     {
-        process(pool);
+        std::vector<boost::shared_ptr<boost::thread> > thread_vec;
+        for (int i = 0; i < 10; ++i)
+        {
+            thread_vec.push_back(boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(process, pool))));
+        }
+
+        for (int i = 0; i < 10; ++i)
+        {
+            thread_vec[i]->join();
+        }
+
+        std::cout << "process over all threads" << std::endl;
     }
 
-#if 0
-    {
-        bsonCpp::doc_value filters = bsonCpp::make_document(bsonCpp::kvp("uid", "npc"));
-        bsonCpp::doc_value opts;
-        mongoCpp::cursor curs = coll.find(filters, opts);
-        try
-        {
-            while (curs.next())
-            {
-                bsonCpp::view doc = curs.getResult();
-                bsonCpp::view arr = doc.get_value_as_array("res");
-
-                for (uint32_t i = 0; i < arr.count_keys(); ++i)
-                {
-                    std::stringstream str;
-                    str << i;
-                    std::cout << arr.get_value_as_utf8(str.str()) << std::endl;
-                }
-            }
-        }
-        catch (const std::exception& e)
-        {
-            std::cout << e.what() << std::endl;
-        }
-    }
-#endif
     return 0;
 }
